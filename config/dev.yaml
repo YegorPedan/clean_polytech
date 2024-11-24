@@ -1,0 +1,9 @@
+# Конфигурация приложения
+env:
+  "dev"
+postgres:
+  host: "localhost"
+  port: 5432
+  user: "egor"
+  password: "password"
+  database: "students"
