@@ -4,6 +4,6 @@ env:
 postgres:
   host: "localhost"
   port: 5432
-  user: "egor"
+  user: "postgres"
   password: "password"
   database: "students"
