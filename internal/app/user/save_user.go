@@ -14,7 +14,7 @@ type SaveUser struct {
 	phoneRepo repository.PhoneRepository
 }
 
-func SaveNewUser(userRepository repository.UserRepository, phoneRepository repository.PhoneRepository) *SaveUser {
+func SaveNewUser(userRepository *repository.UserRepository, phoneRepository *repository.PhoneRepository) *SaveUser {
 	return &SaveUser{
 		userRepo:  userRepository,
 		phoneRepo: phoneRepository,

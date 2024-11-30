@@ -2,8 +2,9 @@ package http
 
 import (
 	"clean-polytech/internal/app/user"
-	"clean-polytech/internal/infra/db/postgres"
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -12,12 +13,34 @@ type UserHandler struct {
 	getUsersUC *user.GetUsersUse
 }
 
-func (h *UserHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	//TODO implement me
-	panic("implement me")
-}
+// Implement the ServeHTTP method for UserHandler
+func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// For simplicity, we handle only two basic routes here
+	switch r.URL.Path {
+	case "/save_users":
+		// Call the use case for saving a user (example, modify as needed)
+		ctx := context.Background()
+		err := h.saveUserUC.Execute(ctx)
+		if err != nil {
+			http.Error(w, "Failed to save user", http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprintln(w, "User saved successfully")
 
-func NewUserHandler(saveUserUC *postgres.UserRepository, getUsersUC *postgres.PhoneRepository) *UserHandler {
+	case "/get":
+		// Call the use case for getting users (example, modify as needed)
+		users, err := h.getUsersUC.Execute()
+		if err != nil {
+			http.Error(w, "Failed to get users", http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprintf(w, "Users: %v", users)
+
+	default:
+		http.NotFound(w, r)
+	}
+}
+func NewUserHandler(saveUserUC *user.SaveUser, getUsersUC *user.GetUsersUse) *UserHandler {
 	return &UserHandler{
 		saveUserUC: saveUserUC,
 		getUsersUC: getUsersUC,

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"clean-polytech/internal/app/user"
 	"clean-polytech/internal/infra/config"
 	"clean-polytech/internal/infra/db/postgres"
 	userHttp "clean-polytech/internal/transport/http"
@@ -24,7 +25,9 @@ func main() {
 
 	userRepo := postgres.NewUserRepository(db)
 	phoneRepo := postgres.NewPhoneRepository(db)
-	saveDataHandler := userHttp.NewUserHandler(userRepo, phoneRepo)
+	saveUserUC := user.SaveNewUser(userRepo, phoneRepo)
+	getUsersUC := user.NewGetUsersUseCase(userRepo)
+	saveDataHandler := userHttp.NewUserHandler(saveUserUC, getUsersUC)
 	http.Handle("/save_user", saveDataHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
