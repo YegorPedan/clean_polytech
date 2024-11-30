@@ -14,6 +14,10 @@ type UserRepository struct {
 	db *pgx.Conn
 }
 
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{db: db}
+}
+
 func ConnectionPostgres(cfg *config.Config) (*sql.DB, error) {
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		cfg.Postgre.Host, cfg.Postgre.Port, cfg.Postgre.User, cfg.Postgre.Password, cfg.Postgre.Database)
