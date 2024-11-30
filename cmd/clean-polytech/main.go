@@ -3,8 +3,10 @@ package main
 import (
 	"clean-polytech/internal/infra/config"
 	"clean-polytech/internal/infra/db/postgres"
+	userHttp "clean-polytech/internal/transport/http"
 	"database/sql"
 	"log"
+	"net/http"
 )
 
 func main() {
@@ -20,4 +22,9 @@ func main() {
 		log.Fatal("Error connect postgres", err.Error())
 	}
 
+	userRepo := postgres.NewUserRepository(db)
+	phoneRepo := postgres.NewPhoneRepository(db)
+	saveDataHandler := userHttp.NewUserHandler(userRepo, phoneRepo)
+	http.Handle("/save_user", saveDataHandler)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

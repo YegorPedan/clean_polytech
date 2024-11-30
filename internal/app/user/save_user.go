@@ -5,6 +5,7 @@ import (
 	"clean-polytech/internal/domain/repository"
 	"context"
 	"github.com/google/uuid"
+	"strconv"
 	"time"
 )
 
@@ -20,13 +21,17 @@ func SaveNewUser(userRepository repository.UserRepository, phoneRepository repos
 	}
 }
 
-func (s *SaveUser) Execute(ctx context.Context, name string, familyName string, phoneModel string) error {
+func (s *SaveUser) Execute(ctx context.Context, name string, familyName string, phoneModel string, charge string) error {
 	phoneID := uuid.New().String()
 	userID := uuid.New().String()
+	phoneCharge, err := strconv.Atoi(charge)
+	if err != nil {
+		panic(err)
+	}
 	phone := &model.Smartphone{
 		ID:             phoneID,
 		Model:          phoneModel,
-		Charge:         charge,
+		Charge:         phoneCharge,
 		ConnectionTime: time.Now(),
 		UserID:         userID,
 	}

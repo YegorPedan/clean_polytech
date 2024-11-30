@@ -6,12 +6,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/jackc/pgx/v4"
 	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
 type UserRepository struct {
-	db *pgx.Conn
+	db *sql.DB
 }
 
 func NewUserRepository(db *sql.DB) *UserRepository {
@@ -44,30 +43,37 @@ func ConnectionPostgres(cfg *config.Config) (*sql.DB, error) {
 
 	return db, nil
 }
-
 func (r *UserRepository) SaveUser(ctx context.Context, user *model.User) error {
-	tx, err := r.db.Begin(ctx)
+	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer func(tx pgx.Tx, ctx context.Context) {
-		err := tx.Rollback(ctx)
-		if err != nil {
-			return
+
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback() // Rollback if there's a panic
+			panic(p)
+		} else if err != nil {
+			_ = tx.Rollback() // Rollback if an error occurred
 		}
-	}(tx, ctx)
+	}()
 
-	_, err = tx.Exec(ctx, "INSERT INTO user (id, name, family_name, phone_id) VALUES ($1, $2, $3, $4)", user.ID, user.Name, user.FamilyName, user.PhoneID)
+	_, err = tx.ExecContext(ctx, "INSERT INTO user (id, name, family_name, phone_id) VALUES ($1, $2, $3, $4)",
+		user.ID, user.Name, user.FamilyName, user.PhoneID)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to execute insert query: %w", err)
 	}
 
-	return tx.Commit(ctx)
+	// Commit the transaction
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
 }
 
 func (r *UserRepository) GetAllUsers() ([]*model.User, error) {
-	ctx := context.Background()
-	rows, err := r.db.Query(ctx, "SELECT id, name, family_name, phone_id FROM user")
+	rows, err := r.db.Query("SELECT id, name, family_name, phone_id FROM user")
 	defer rows.Close()
 	if err != nil {
 		return nil, err
