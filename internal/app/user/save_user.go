@@ -10,8 +10,8 @@ import (
 )
 
 type SaveUser struct {
-	userRepo  repository.UserRepository
-	phoneRepo repository.PhoneRepository
+	userRepo  *repository.UserRepository
+	phoneRepo *repository.PhoneRepository
 }
 
 func SaveNewUser(userRepository *repository.UserRepository, phoneRepository *repository.PhoneRepository) *SaveUser {
